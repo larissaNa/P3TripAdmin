@@ -21,7 +21,7 @@ export function ViagemDetalhes({ viagem, onClose }: ViagemDetalhesProps) {
   if (!viagem) return null;
 
   // Garante que images sempre é um array — CORREÇÃO PRINCIPAL
-  const images = viagem.images ?? [];
+  const images = viagem.imagens ?? [];
 
   const proximaImagem = () => {
     if (images.length === 0) return;

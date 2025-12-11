@@ -19,7 +19,7 @@ export const ViagemService = {
     // cria viagem sem imagens
     const novaViagem = await ViagemRepository.create({
       ...viagem,
-      images: []
+      imagens: []
     });
 
     let imagens: string[] = [];
@@ -30,7 +30,7 @@ export const ViagemService = {
 
     // atualiza com imagens
     const viagemFinal = await ViagemRepository.update(novaViagem.id, {
-      images: imagens,
+      imagens: imagens,
     });
 
     return viagemFinal;
@@ -44,7 +44,7 @@ export const ViagemService = {
   // 1️⃣ Buscar a viagem atual (para recuperar as imagens já existentes)
   const viagemAtual = await ViagemRepository.getById(id);
 
-  const imagensExistentes = viagemAtual?.images ?? [];
+  const imagensExistentes = viagemAtual?.imagens ?? [];
 
   // 2️⃣ Upload das novas imagens
   let novasImagens: string[] = [];
@@ -62,7 +62,7 @@ export const ViagemService = {
   // 4️⃣ Atualiza viagem
   const dadosAtualizados = {
     ...viagem,
-    images: imagensFinais
+    imagens: imagensFinais
   };
 
   return ViagemRepository.update(id, dadosAtualizados);
@@ -74,8 +74,8 @@ export const ViagemService = {
   async excluir(id: string): Promise<void> {
     const viagem = await ViagemRepository.getById(id);
 
-    if (viagem && viagem.images.length > 0) {  // corrigido
-      await ViagemRepository.deleteImages(viagem.images); // corrigido
+    if (viagem && viagem.imagens.length > 0) {  // corrigido
+      await ViagemRepository.deleteImages(viagem.imagens); // corrigido
     }
 
     await ViagemRepository.delete(id);

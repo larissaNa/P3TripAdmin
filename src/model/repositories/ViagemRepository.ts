@@ -31,14 +31,20 @@ export const ViagemRepository = {
   },
 
   // -------------------------------------------------------
-  // CRIAR
+  // CRIAR  (COM DEBUG)
   // -------------------------------------------------------
   async create(viagem: ViagemInput): Promise<Viagem> {
+
+    console.log("📤 Enviando dados para INSERT:", viagem);
+
     const { data, error } = await supabase
       .from("viagem")
       .insert(viagem)
-      .select()
+      .select("*")
       .single();
+
+    console.log("❗ ERRO SUPABASE:", error);
+    console.log("📥 RESPOSTA SUPABASE:", data);
 
     if (error) throw error;
     return data;
@@ -52,7 +58,7 @@ export const ViagemRepository = {
       .from("viagem")
       .update(viagem)
       .eq("id", id)
-      .select()
+      .select("*")
       .single();
 
     if (error) throw error;
@@ -75,10 +81,7 @@ export const ViagemRepository = {
   // STORAGE
   // =======================================================
 
-  /**
-   * Upload de múltiplas imagens.
-   * Retorna URLs públicas das imagens enviadas.
-   */
+
   async uploadImages(files: File[], viagemId: string): Promise<string[]> {
     const urls: string[] = [];
 
@@ -104,6 +107,8 @@ export const ViagemRepository = {
     return urls;
   },
 
+
+  
   // -------------------------------------------------------
   // DELETAR IMAGENS
   // -------------------------------------------------------
@@ -111,7 +116,6 @@ export const ViagemRepository = {
     if (!imageUrls || imageUrls.length === 0) return;
 
     const paths = imageUrls.map((url) => {
-      // Extrai correto: bucket/viagemId/file.jpg → viagemId/file.jpg
       const path = url.split(`${BUCKET_NAME}/`)[1];
       return path;
     });
