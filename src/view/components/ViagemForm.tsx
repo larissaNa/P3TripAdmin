@@ -1,9 +1,4 @@
-/**
- * View Component - ViagemForm
- * Formulário para criar/editar viagens
- */
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Viagem, ViagemInput } from '@/model/entities/Viagem';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -20,16 +15,42 @@ interface ViagemFormProps {
 }
 
 export function ViagemForm({ open, onClose, onSubmit, viagemEdicao }: ViagemFormProps) {
-  const [titulo, setTitulo] = useState(viagemEdicao?.titulo || '');
-  const [descricao, setDescricao] = useState(viagemEdicao?.descricao || '');
-  const [destino, setDestino] = useState(viagemEdicao?.destino || '');
-  const [preco, setPreco] = useState(viagemEdicao?.preco?.toString() || '');
+  const [titulo, setTitulo] = useState('');
+  const [descricao, setDescricao] = useState('');
+  const [destino, setDestino] = useState('');
+  const [preco, setPreco] = useState('');
   const [arquivos, setArquivos] = useState<File[]>([]);
-  const [imagensExistentes, setImagensExistentes] = useState<string[]>(viagemEdicao?.images || []);
+  const [imagensExistentes, setImagensExistentes] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
-  const [dataRange, setDataRange] = useState(viagemEdicao?.data_range || '');
-  const [dias, setDias] = useState(viagemEdicao?.dias?.toString() || '');
+  const [dataRange, setDataRange] = useState('');
+  const [dias, setDias] = useState('');
 
+  // Carrega os dados da viagem ao abrir o modal
+  useEffect(() => {
+    if (viagemEdicao) {
+      setTitulo(viagemEdicao.titulo || '');
+      setDescricao(viagemEdicao.descricao || '');
+      setDestino(viagemEdicao.destino || '');
+      setPreco(viagemEdicao.preco?.toString() || '');
+      setImagensExistentes(viagemEdicao.imagens || []);
+      setDataRange(viagemEdicao.data_range || '');
+      setDias(viagemEdicao.dias?.toString() || '');
+    } else {
+      // Se for nova viagem, limpa tudo
+      handleClear();
+    }
+  }, [viagemEdicao, open]);
+
+  const handleClear = () => {
+    setTitulo('');
+    setDescricao('');
+    setDestino('');
+    setPreco('');
+    setArquivos([]);
+    setImagensExistentes([]);
+    setDataRange('');
+    setDias('');
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,29 +62,22 @@ export function ViagemForm({ open, onClose, onSubmit, viagemEdicao }: ViagemForm
           titulo,
           descricao: descricao || undefined,
           destino,
-          preco: parseFloat(preco),
-          images: imagensExistentes,
-          data_range: dataRange,
-          dias: Number(dias)
+          preco: preco ? parseFloat(preco) : undefined,
+          imagens: imagensExistentes,
+          data_range: dataRange || undefined,
+          dias: dias ? Number(dias) : undefined
         },
         arquivos
       );
 
       handleClose();
-    } catch (error) {
-      // Erro tratado no viewmodel
     } finally {
       setLoading(false);
     }
   };
 
   const handleClose = () => {
-    setTitulo('');
-    setDescricao('');
-    setDestino('');
-    setPreco('');
-    setArquivos([]);
-    setImagensExistentes([]);
+    handleClear();
     onClose();
   };
 
@@ -81,19 +95,18 @@ export function ViagemForm({ open, onClose, onSubmit, viagemEdicao }: ViagemForm
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>
-            {viagemEdicao ? 'Editar Viagem' : 'Nova Viagem'}
-          </DialogTitle>
+          <DialogTitle>{viagemEdicao ? 'Editar Viagem' : 'Nova Viagem'}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          
           <div>
             <Label htmlFor="titulo">Título</Label>
             <Input
               id="titulo"
               value={titulo}
               onChange={e => setTitulo(e.target.value)}
-              required
+              required={!viagemEdicao}
             />
           </div>
 
@@ -103,7 +116,7 @@ export function ViagemForm({ open, onClose, onSubmit, viagemEdicao }: ViagemForm
               id="destino"
               value={destino}
               onChange={e => setDestino(e.target.value)}
-              required
+              required={!viagemEdicao}
             />
           </div>
 
@@ -116,7 +129,7 @@ export function ViagemForm({ open, onClose, onSubmit, viagemEdicao }: ViagemForm
               min="0"
               value={preco}
               onChange={e => setPreco(e.target.value)}
-              required
+              required={!viagemEdicao}
             />
           </div>
 
@@ -168,7 +181,7 @@ export function ViagemForm({ open, onClose, onSubmit, viagemEdicao }: ViagemForm
             />
           </div>
 
-          {/* Preview das novas imagens */}
+          {/* Preview das imagens novas */}
           {arquivos.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {arquivos.map((file, index) => (
@@ -190,7 +203,7 @@ export function ViagemForm({ open, onClose, onSubmit, viagemEdicao }: ViagemForm
               placeholder="Ex: 10/02/2025 - 15/02/2025"
               value={dataRange}
               onChange={e => setDataRange(e.target.value)}
-              required
+              required={!viagemEdicao}
             />
           </div>
 
@@ -202,10 +215,10 @@ export function ViagemForm({ open, onClose, onSubmit, viagemEdicao }: ViagemForm
               min="1"
               value={dias}
               onChange={e => setDias(e.target.value)}
-              required
+              required={!viagemEdicao}
             />
           </div>
-          
+
           <div className="flex gap-2 justify-end">
             <Button type="button" variant="outline" onClick={handleClose}>
               Cancelar
@@ -214,7 +227,6 @@ export function ViagemForm({ open, onClose, onSubmit, viagemEdicao }: ViagemForm
               {loading ? 'Salvando...' : 'Salvar'}
             </Button>
           </div>
-
         </form>
       </DialogContent>
     </Dialog>

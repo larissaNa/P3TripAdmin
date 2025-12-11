@@ -16,7 +16,7 @@ interface ViagemCardProps {
 }
 
 export function ViagemCard({ viagem, onView, onEdit, onDelete }: ViagemCardProps) {
-  const imagens = viagem.images ?? []; // garante que sempre seja array
+  const imagens = viagem.imagens ?? []; // garante que sempre seja array
 
   return (
     <Card className="w-full">
