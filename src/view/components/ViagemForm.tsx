@@ -5,7 +5,14 @@ import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
 import { Label } from './ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
-import { X } from 'lucide-react';
+import { X, CalendarIcon } from 'lucide-react';
+import { Popover, PopoverTrigger, PopoverContent } from "./ui/popover";
+import { Calendar } from "./ui/calendar";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+
+// 🔥 Import do tipo correto do calendário
+import type { DateRange } from "react-day-picker";
 
 interface ViagemFormProps {
   open: boolean;
@@ -15,6 +22,7 @@ interface ViagemFormProps {
 }
 
 export function ViagemForm({ open, onClose, onSubmit, viagemEdicao }: ViagemFormProps) {
+
   const [titulo, setTitulo] = useState('');
   const [descricao, setDescricao] = useState('');
   const [destino, setDestino] = useState('');
@@ -22,10 +30,16 @@ export function ViagemForm({ open, onClose, onSubmit, viagemEdicao }: ViagemForm
   const [arquivos, setArquivos] = useState<File[]>([]);
   const [imagensExistentes, setImagensExistentes] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
-  const [dataRange, setDataRange] = useState('');
+
+  // 🔥 Estado corrigido: nunca undefined, sempre um DateRange válido
+  const [periodo, setPeriodo] = useState<DateRange>({
+    from: undefined,
+    to: undefined,
+  });
+
   const [dias, setDias] = useState('');
 
-  // Carrega os dados da viagem ao abrir o modal
+  // Carrega dados no modo edição
   useEffect(() => {
     if (viagemEdicao) {
       setTitulo(viagemEdicao.titulo || '');
@@ -33,13 +47,37 @@ export function ViagemForm({ open, onClose, onSubmit, viagemEdicao }: ViagemForm
       setDestino(viagemEdicao.destino || '');
       setPreco(viagemEdicao.preco?.toString() || '');
       setImagensExistentes(viagemEdicao.imagens || []);
-      setDataRange(viagemEdicao.data_range || '');
+
+      // Converte string para período
+      if (viagemEdicao.data_range) {
+        const [inicio, fim] = viagemEdicao.data_range.split(" - ");
+
+        setPeriodo({
+          from: inicio ? converterData(inicio) : undefined,
+          to: fim ? converterData(fim) : undefined,
+        });
+      }
+
       setDias(viagemEdicao.dias?.toString() || '');
     } else {
-      // Se for nova viagem, limpa tudo
       handleClear();
     }
   }, [viagemEdicao, open]);
+
+  // Converte string dd/MM/yyyy -> Date
+  function converterData(str: string): Date {
+    const [d, m, y] = str.split("/");
+    return new Date(Number(y), Number(m) - 1, Number(d));
+  }
+
+  // Calcula os dias automaticamente
+  useEffect(() => {
+    if (periodo.from && periodo.to) {
+      const diffMs = periodo.to.getTime() - periodo.from.getTime();
+      const totalDias = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+      setDias(String(totalDias));
+    }
+  }, [periodo]);
 
   const handleClear = () => {
     setTitulo('');
@@ -48,13 +86,24 @@ export function ViagemForm({ open, onClose, onSubmit, viagemEdicao }: ViagemForm
     setPreco('');
     setArquivos([]);
     setImagensExistentes([]);
-    setDataRange('');
+
+    // 🔥 reset correto
+    setPeriodo({
+      from: undefined,
+      to: undefined,
+    });
+
     setDias('');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+
+    const dataRangeFormatado =
+      periodo.from && periodo.to
+        ? `${format(periodo.from, "dd/MM/yyyy")} - ${format(periodo.to, "dd/MM/yyyy")}`
+        : undefined;
 
     try {
       await onSubmit(
@@ -64,7 +113,7 @@ export function ViagemForm({ open, onClose, onSubmit, viagemEdicao }: ViagemForm
           destino,
           preco: preco ? parseFloat(preco) : undefined,
           imagens: imagensExistentes,
-          data_range: dataRange || undefined,
+          data_range: dataRangeFormatado,
           dias: dias ? Number(dias) : undefined
         },
         arquivos
@@ -99,7 +148,8 @@ export function ViagemForm({ open, onClose, onSubmit, viagemEdicao }: ViagemForm
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          
+
+          {/* TÍTULO */}
           <div>
             <Label htmlFor="titulo">Título</Label>
             <Input
@@ -110,6 +160,7 @@ export function ViagemForm({ open, onClose, onSubmit, viagemEdicao }: ViagemForm
             />
           </div>
 
+          {/* DESTINO */}
           <div>
             <Label htmlFor="destino">Destino</Label>
             <Input
@@ -120,6 +171,7 @@ export function ViagemForm({ open, onClose, onSubmit, viagemEdicao }: ViagemForm
             />
           </div>
 
+          {/* PREÇO */}
           <div>
             <Label htmlFor="preco">Preço (R$)</Label>
             <Input
@@ -133,6 +185,7 @@ export function ViagemForm({ open, onClose, onSubmit, viagemEdicao }: ViagemForm
             />
           </div>
 
+          {/* DESCRIÇÃO */}
           <div>
             <Label htmlFor="descricao">Descrição</Label>
             <Textarea
@@ -143,7 +196,7 @@ export function ViagemForm({ open, onClose, onSubmit, viagemEdicao }: ViagemForm
             />
           </div>
 
-          {/* Imagens existentes */}
+          {/* IMAGENS EXISTENTES */}
           {imagensExistentes.length > 0 && (
             <div>
               <Label>Imagens atuais</Label>
@@ -168,20 +221,13 @@ export function ViagemForm({ open, onClose, onSubmit, viagemEdicao }: ViagemForm
             </div>
           )}
 
+          {/* UPLOAD IMAGENS */}
           <div>
-            <Label htmlFor="imagens">
-              {viagemEdicao ? 'Adicionar novas imagens' : 'Imagens'}
-            </Label>
-            <Input
-              id="imagens"
-              type="file"
-              accept="image/*"
-              multiple
-              onChange={handleFileChange}
-            />
+            <Label htmlFor="imagens">{viagemEdicao ? 'Adicionar novas imagens' : 'Imagens'}</Label>
+            <Input id="imagens" type="file" accept="image/*" multiple onChange={handleFileChange} />
           </div>
 
-          {/* Preview das imagens novas */}
+          {/* PREVIEW IMAGENS NOVAS */}
           {arquivos.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {arquivos.map((file, index) => (
@@ -195,18 +241,36 @@ export function ViagemForm({ open, onClose, onSubmit, viagemEdicao }: ViagemForm
             </div>
           )}
 
-          <div>
-            <Label htmlFor="dataRange">Período da viagem</Label>
-            <Input
-              id="dataRange"
-              type="text"
-              placeholder="Ex: 10/02/2025 - 15/02/2025"
-              value={dataRange}
-              onChange={e => setDataRange(e.target.value)}
-              required={!viagemEdicao}
-            />
+          {/* 🔥 CALENDÁRIO RANGE */}
+          <div className="flex flex-col gap-2">
+            <Label>Período da viagem</Label>
+
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="justify-start text-left font-normal"
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {periodo.from && periodo.to
+                    ? `${format(periodo.from, "dd/MM/yyyy")} - ${format(periodo.to, "dd/MM/yyyy")}`
+                    : "Selecione o período"}
+                </Button>
+              </PopoverTrigger>
+
+              <PopoverContent className="p-0">
+                <Calendar
+                  mode="range"
+                  selected={periodo}
+                  onSelect={(value) => setPeriodo(value ?? { from: undefined, to: undefined })}
+                  numberOfMonths={1}
+                  locale={ptBR}
+                />
+              </PopoverContent>
+            </Popover>
           </div>
 
+          {/* DIAS AUTOMÁTICOS */}
           <div>
             <Label htmlFor="dias">Quantidade de dias</Label>
             <Input
@@ -214,19 +278,17 @@ export function ViagemForm({ open, onClose, onSubmit, viagemEdicao }: ViagemForm
               type="number"
               min="1"
               value={dias}
-              onChange={e => setDias(e.target.value)}
-              required={!viagemEdicao}
+              readOnly
             />
           </div>
 
           <div className="flex gap-2 justify-end">
-            <Button type="button" variant="outline" onClick={handleClose}>
-              Cancelar
-            </Button>
+            <Button type="button" variant="outline" onClick={handleClose}>Cancelar</Button>
             <Button type="submit" disabled={loading}>
               {loading ? 'Salvando...' : 'Salvar'}
             </Button>
           </div>
+
         </form>
       </DialogContent>
     </Dialog>
