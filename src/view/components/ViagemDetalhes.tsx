@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { Viagem } from '@/model/entities/Viagem';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Button } from './ui/button';
-import { MapPin, DollarSign, ChevronLeft, ChevronRight } from 'lucide-react';
+import { MapPin, DollarSign, ChevronLeft, ChevronRight, Check } from 'lucide-react';
 
 interface ViagemDetalhesProps {
   viagem: Viagem | null;
@@ -106,6 +106,20 @@ export function ViagemDetalhes({ viagem, onClose }: ViagemDetalhesProps) {
               <div>
                 <h4 className="font-semibold mb-1">Descrição</h4>
                 <p className="text-muted-foreground">{viagem.descricao}</p>
+              </div>
+            )}
+
+            {viagem.inclui && viagem.inclui.length > 0 && (
+              <div>
+                <h4 className="font-semibold mb-2">O que está incluso</h4>
+                <ul className="space-y-1">
+                  {viagem.inclui.map((item, index) => (
+                    <li key={index} className="flex items-center gap-2 text-muted-foreground">
+                      <Check className="h-4 w-4 text-green-500" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
             )}
           </div>

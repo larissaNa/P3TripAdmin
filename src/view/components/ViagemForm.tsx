@@ -5,7 +5,7 @@ import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
 import { Label } from './ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
-import { X, CalendarIcon } from 'lucide-react';
+import { X, CalendarIcon, Plus } from 'lucide-react';
 import { Popover, PopoverTrigger, PopoverContent } from "./ui/popover";
 import { Calendar } from "./ui/calendar";
 import { format } from "date-fns";
@@ -31,6 +31,10 @@ export function ViagemForm({ open, onClose, onSubmit, viagemEdicao }: ViagemForm
   const [imagensExistentes, setImagensExistentes] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
+  // 🔥 Estado para itens inclusos
+  const [inclui, setInclui] = useState<string[]>([]);
+  const [novoItemInclui, setNovoItemInclui] = useState('');
+
   // 🔥 Estado corrigido: nunca undefined, sempre um DateRange válido
   const [periodo, setPeriodo] = useState<DateRange>({
     from: undefined,
@@ -47,6 +51,7 @@ export function ViagemForm({ open, onClose, onSubmit, viagemEdicao }: ViagemForm
       setDestino(viagemEdicao.destino || '');
       setPreco(viagemEdicao.preco?.toString() || '');
       setImagensExistentes(viagemEdicao.imagens || []);
+      setInclui(viagemEdicao.inclui || []);
 
       // Converte string para período
       if (viagemEdicao.data_range) {
@@ -86,6 +91,8 @@ export function ViagemForm({ open, onClose, onSubmit, viagemEdicao }: ViagemForm
     setPreco('');
     setArquivos([]);
     setImagensExistentes([]);
+    setInclui([]);
+    setNovoItemInclui('');
 
     // 🔥 reset correto
     setPeriodo({
@@ -113,6 +120,7 @@ export function ViagemForm({ open, onClose, onSubmit, viagemEdicao }: ViagemForm
           destino,
           preco: preco ? parseFloat(preco) : undefined,
           imagens: imagensExistentes,
+          inclui,
           data_range: dataRangeFormatado,
           dias: dias ? Number(dias) : undefined
         },
@@ -138,6 +146,18 @@ export function ViagemForm({ open, onClose, onSubmit, viagemEdicao }: ViagemForm
 
   const removerImagemExistente = (url: string) => {
     setImagensExistentes(prev => prev.filter(img => img !== url));
+  };
+
+  const adicionarInclui = () => {
+    const item = novoItemInclui.trim();
+    if (!item) return;
+
+    setInclui(prev => (prev.includes(item) ? prev : [...prev, item]));
+    setNovoItemInclui('');
+  };
+
+  const removerInclui = (index: number) => {
+    setInclui(prev => prev.filter((_, i) => i !== index));
   };
 
   return (
@@ -194,6 +214,47 @@ export function ViagemForm({ open, onClose, onSubmit, viagemEdicao }: ViagemForm
               onChange={e => setDescricao(e.target.value)}
               rows={3}
             />
+          </div>
+
+          {/* INCLUI */}
+          <div>
+            <Label>O que está incluso</Label>
+            <div className="flex gap-2 mt-2">
+              <Input
+                value={novoItemInclui}
+                onChange={(e) => setNovoItemInclui(e.target.value)}
+                placeholder="Ex: Hospedagem completa"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    adicionarInclui();
+                  }
+                }}
+              />
+              <Button type="button" onClick={adicionarInclui} size="icon">
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+
+            {inclui.length > 0 && (
+              <ul className="mt-2 space-y-2">
+                {inclui.map((item, index) => (
+                  <li key={index} className="flex items-center justify-between bg-muted p-2 rounded-md text-sm">
+                    <div className="flex items-center gap-2">
+                      <div className="h-2 w-2 rounded-full bg-primary" />
+                      <span>{item}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removerInclui(index)}
+                      className="text-destructive hover:bg-destructive/10 p-1 rounded transition-colors"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
           {/* IMAGENS EXISTENTES */}
