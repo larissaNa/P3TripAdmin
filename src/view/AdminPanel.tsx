@@ -3,8 +3,6 @@
  * Página principal do painel administrativo de turismo
  */
 
-import { useState } from 'react';
-import { useViagens } from '@/viewmodel/useViagens';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminPanelViewModel } from '@/viewmodel/components/useAdminPanelViewModel';
 import { ViagemCard } from '@/view/components/ViagemCard';
@@ -12,11 +10,8 @@ import { ViagemForm } from '@/view/components/ViagemForm';
 import { ViagemDetalhes } from '@/view/components/ViagemDetalhes';
 import { FiltroViagens } from '@/view/components/FiltroViagens';
 import { Button } from './components/ui/button';
-import { Viagem, ViagemInput } from '@/model/entities/Viagem';
 import { Plus, Plane, RefreshCw, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '../view/components/ui/button';
-import { Plus, Plane, RefreshCw } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,7 +22,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from './components/ui/alert-dialog';
-} from '../view/components/ui/alert-dialog';
 
 export function AdminPanel() {
   const {
@@ -46,52 +40,19 @@ export function AdminPanel() {
     selecionarViagem,
     atualizarFiltros,
     limparFiltros,
-    recarregar
-  } = useViagens();
-
-  const { user, signOut } = useAuth();
-  const navigate = useNavigate();
-
-  const [formAberto, setFormAberto] = useState(false);
-  const [viagemEdicao, setViagemEdicao] = useState<Viagem | null>(null);
-  const [viagemExcluir, setViagemExcluir] = useState<string | null>(null);
-
-  const handleLogout = async () => {
-    await signOut();
-    navigate('/auth');
-  };
-
-  const handleNovaViagem = () => {
-    setViagemEdicao(null);
-    setFormAberto(true);
-  };
-
-  const handleEditarViagem = (viagem: Viagem) => {
-    setViagemEdicao(viagem);
-    setFormAberto(true);
-  };
-
-  const handleSubmitForm = async (dados: ViagemInput, arquivos: File[]) => {
-    if (viagemEdicao) {
-      await atualizarViagem(viagemEdicao.id, dados, arquivos);
-    } else {
-      await criarViagem(dados, arquivos);
-    }
-    setFormAberto(false);
-    setViagemEdicao(null);
-  };
-
-  const handleConfirmarExclusao = async () => {
-    if (viagemExcluir) {
-      await excluirViagem(viagemExcluir);
-      setViagemExcluir(null);
-    }
-  };
     recarregar,
     handleCloseForm,
     handleCloseDetalhes,
     handleCancelExclusao
   } = useAdminPanelViewModel();
+
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/auth');
+  };
 
   return (
     <div className="min-h-screen bg-background">

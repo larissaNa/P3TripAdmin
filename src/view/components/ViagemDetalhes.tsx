@@ -7,7 +7,6 @@ import { Viagem } from '@/model/entities/Viagem';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Button } from './ui/button';
 import { MapPin, DollarSign, ChevronLeft, ChevronRight, Check } from 'lucide-react';
-import { MapPin, DollarSign, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useViagemDetalhesViewModel } from '@/viewmodel/components/useViagemDetalhesViewModel';
 
 interface ViagemDetalhesProps {

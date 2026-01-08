@@ -40,7 +40,7 @@ describe('Integration: View <-> ViewModel <-> Service (via Props)', () => {
 
     // Simulate Date Selection (triggering the mock calendar)
     // The popover trigger might need to be clicked first
-    const dateButton = screen.getByText(/Selecione uma data/i); 
+    const dateButton = screen.getByText(/Selecione o período/i); 
     fireEvent.click(dateButton);
     
     const selectDateBtn = screen.getByText('Select Date');
