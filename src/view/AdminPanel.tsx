@@ -3,11 +3,18 @@
  * Página principal do painel administrativo de turismo
  */
 
+import { useState } from 'react';
+import { useViagens } from '@/viewmodel/useViagens';
+import { useAuth } from '@/hooks/useAuth';
 import { useAdminPanelViewModel } from '@/viewmodel/components/useAdminPanelViewModel';
 import { ViagemCard } from '@/view/components/ViagemCard';
 import { ViagemForm } from '@/view/components/ViagemForm';
 import { ViagemDetalhes } from '@/view/components/ViagemDetalhes';
 import { FiltroViagens } from '@/view/components/FiltroViagens';
+import { Button } from './components/ui/button';
+import { Viagem, ViagemInput } from '@/model/entities/Viagem';
+import { Plus, Plane, RefreshCw, LogOut } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '../view/components/ui/button';
 import { Plus, Plane, RefreshCw } from 'lucide-react';
 import {
@@ -19,6 +26,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+} from './components/ui/alert-dialog';
 } from '../view/components/ui/alert-dialog';
 
 export function AdminPanel() {
@@ -38,6 +46,47 @@ export function AdminPanel() {
     selecionarViagem,
     atualizarFiltros,
     limparFiltros,
+    recarregar
+  } = useViagens();
+
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const [formAberto, setFormAberto] = useState(false);
+  const [viagemEdicao, setViagemEdicao] = useState<Viagem | null>(null);
+  const [viagemExcluir, setViagemExcluir] = useState<string | null>(null);
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/auth');
+  };
+
+  const handleNovaViagem = () => {
+    setViagemEdicao(null);
+    setFormAberto(true);
+  };
+
+  const handleEditarViagem = (viagem: Viagem) => {
+    setViagemEdicao(viagem);
+    setFormAberto(true);
+  };
+
+  const handleSubmitForm = async (dados: ViagemInput, arquivos: File[]) => {
+    if (viagemEdicao) {
+      await atualizarViagem(viagemEdicao.id, dados, arquivos);
+    } else {
+      await criarViagem(dados, arquivos);
+    }
+    setFormAberto(false);
+    setViagemEdicao(null);
+  };
+
+  const handleConfirmarExclusao = async () => {
+    if (viagemExcluir) {
+      await excluirViagem(viagemExcluir);
+      setViagemExcluir(null);
+    }
+  };
     recarregar,
     handleCloseForm,
     handleCloseDetalhes,
@@ -53,15 +102,23 @@ export function AdminPanel() {
             <Plane className="h-6 w-6 text-primary" />
             <h1 className="text-xl font-bold">Painel de Turismo</h1>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={recarregar}>
-              <RefreshCw className="h-4 w-4 mr-1" />
-              Atualizar
-            </Button>
-            <Button onClick={handleNovaViagem}>
-              <Plus className="h-4 w-4 mr-1" />
-              Nova Viagem
-            </Button>
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-muted-foreground hidden sm:block">
+              {user?.email}
+            </span>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={recarregar}>
+                <RefreshCw className="h-4 w-4 mr-1" />
+                Atualizar
+              </Button>
+              <Button onClick={handleNovaViagem}>
+                <Plus className="h-4 w-4 mr-1" />
+                Nova Viagem
+              </Button>
+              <Button variant="ghost" size="sm" onClick={handleLogout}>
+                <LogOut className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
       </header>
