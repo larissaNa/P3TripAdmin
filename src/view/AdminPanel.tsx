@@ -3,14 +3,12 @@
  * Página principal do painel administrativo de turismo
  */
 
-import { useState } from 'react';
-import { useViagens } from '@/viewmodel/useViagens';
+import { useAdminPanelViewModel } from '@/viewmodel/components/useAdminPanelViewModel';
 import { ViagemCard } from '@/view/components/ViagemCard';
 import { ViagemForm } from '@/view/components/ViagemForm';
 import { ViagemDetalhes } from '@/view/components/ViagemDetalhes';
 import { FiltroViagens } from '@/view/components/FiltroViagens';
 import { Button } from '../view/components/ui/button';
-import { Viagem } from '@/model/entities/Viagem';
 import { Plus, Plane, RefreshCw } from 'lucide-react';
 import {
   AlertDialog,
@@ -21,7 +19,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '../view//components/ui/alert-dialog';
+} from '../view/components/ui/alert-dialog';
 
 export function AdminPanel() {
   const {
@@ -29,43 +27,22 @@ export function AdminPanel() {
     loading,
     viagemSelecionada,
     filtros,
-    criarViagem,
-    atualizarViagem,
-    excluirViagem,
+    formAberto,
+    viagemEdicao,
+    viagemExcluir,
+    handleNovaViagem,
+    handleEditarViagem,
+    handleSubmitForm,
+    handleConfirmarExclusao,
+    handleSolicitarExclusao,
     selecionarViagem,
     atualizarFiltros,
     limparFiltros,
-    recarregar
-  } = useViagens();
-
-  const [formAberto, setFormAberto] = useState(false);
-  const [viagemEdicao, setViagemEdicao] = useState<Viagem | null>(null);
-  const [viagemExcluir, setViagemExcluir] = useState<string | null>(null);
-
-  const handleNovaViagem = () => {
-    setViagemEdicao(null);
-    setFormAberto(true);
-  };
-
-  const handleEditarViagem = (viagem: Viagem) => {
-    setViagemEdicao(viagem);
-    setFormAberto(true);
-  };
-
-  const handleSubmitForm = async (dados, arquivos) => {
-  if (viagemEdicao) {
-    await atualizarViagem(viagemEdicao.id, dados, arquivos);
-  } else {
-    await criarViagem(dados, arquivos);
-  }
-};
-
-  const handleConfirmarExclusao = async () => {
-    if (viagemExcluir) {
-      await excluirViagem(viagemExcluir);
-      setViagemExcluir(null);
-    }
-  };
+    recarregar,
+    handleCloseForm,
+    handleCloseDetalhes,
+    handleCancelExclusao
+  } = useAdminPanelViewModel();
 
   return (
     <div className="min-h-screen bg-background">
@@ -115,7 +92,7 @@ export function AdminPanel() {
                 viagem={viagem}
                 onView={selecionarViagem}
                 onEdit={handleEditarViagem}
-                onDelete={id => setViagemExcluir(id)}
+                onDelete={handleSolicitarExclusao}
               />
             ))}
           </div>
@@ -125,10 +102,7 @@ export function AdminPanel() {
       {/* Modal de formulário */}
       <ViagemForm
         open={formAberto}
-        onClose={() => {
-          setFormAberto(false);
-          setViagemEdicao(null);
-        }}
+        onClose={handleCloseForm}
         onSubmit={handleSubmitForm}
         viagemEdicao={viagemEdicao}
       />
@@ -136,11 +110,11 @@ export function AdminPanel() {
       {/* Modal de detalhes */}
       <ViagemDetalhes
         viagem={viagemSelecionada}
-        onClose={() => selecionarViagem(null)}
+        onClose={handleCloseDetalhes}
       />
 
       {/* Dialog de confirmação de exclusão */}
-      <AlertDialog open={!!viagemExcluir} onOpenChange={() => setViagemExcluir(null)}>
+      <AlertDialog open={!!viagemExcluir} onOpenChange={handleCancelExclusao}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>

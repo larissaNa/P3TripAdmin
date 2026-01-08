@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import { Viagem, ViagemInput } from '@/model/entities/Viagem';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -10,9 +9,7 @@ import { Popover, PopoverTrigger, PopoverContent } from "./ui/popover";
 import { Calendar } from "./ui/calendar";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-
-// 🔥 Import do tipo correto do calendário
-import type { DateRange } from "react-day-picker";
+import { useViagemFormViewModel } from '@/viewmodel/components/useViagemFormViewModel';
 
 interface ViagemFormProps {
   open: boolean;
@@ -22,123 +19,21 @@ interface ViagemFormProps {
 }
 
 export function ViagemForm({ open, onClose, onSubmit, viagemEdicao }: ViagemFormProps) {
-
-  const [titulo, setTitulo] = useState('');
-  const [descricao, setDescricao] = useState('');
-  const [destino, setDestino] = useState('');
-  const [preco, setPreco] = useState('');
-  const [arquivos, setArquivos] = useState<File[]>([]);
-  const [imagensExistentes, setImagensExistentes] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  // 🔥 Estado corrigido: nunca undefined, sempre um DateRange válido
-  const [periodo, setPeriodo] = useState<DateRange>({
-    from: undefined,
-    to: undefined,
-  });
-
-  const [dias, setDias] = useState('');
-
-  // Carrega dados no modo edição
-  useEffect(() => {
-    if (viagemEdicao) {
-      setTitulo(viagemEdicao.titulo || '');
-      setDescricao(viagemEdicao.descricao || '');
-      setDestino(viagemEdicao.destino || '');
-      setPreco(viagemEdicao.preco?.toString() || '');
-      setImagensExistentes(viagemEdicao.imagens || []);
-
-      // Converte string para período
-      if (viagemEdicao.data_range) {
-        const [inicio, fim] = viagemEdicao.data_range.split(" - ");
-
-        setPeriodo({
-          from: inicio ? converterData(inicio) : undefined,
-          to: fim ? converterData(fim) : undefined,
-        });
-      }
-
-      setDias(viagemEdicao.dias?.toString() || '');
-    } else {
-      handleClear();
-    }
-  }, [viagemEdicao, open]);
-
-  // Converte string dd/MM/yyyy -> Date
-  function converterData(str: string): Date {
-    const [d, m, y] = str.split("/");
-    return new Date(Number(y), Number(m) - 1, Number(d));
-  }
-
-  // Calcula os dias automaticamente
-  useEffect(() => {
-    if (periodo.from && periodo.to) {
-      const diffMs = periodo.to.getTime() - periodo.from.getTime();
-      const totalDias = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-      setDias(String(totalDias));
-    }
-  }, [periodo]);
-
-  const handleClear = () => {
-    setTitulo('');
-    setDescricao('');
-    setDestino('');
-    setPreco('');
-    setArquivos([]);
-    setImagensExistentes([]);
-
-    // 🔥 reset correto
-    setPeriodo({
-      from: undefined,
-      to: undefined,
-    });
-
-    setDias('');
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-
-    const dataRangeFormatado =
-      periodo.from && periodo.to
-        ? `${format(periodo.from, "dd/MM/yyyy")} - ${format(periodo.to, "dd/MM/yyyy")}`
-        : undefined;
-
-    try {
-      await onSubmit(
-        {
-          titulo,
-          descricao: descricao || undefined,
-          destino,
-          preco: preco ? parseFloat(preco) : undefined,
-          imagens: imagensExistentes,
-          data_range: dataRangeFormatado,
-          dias: dias ? Number(dias) : undefined
-        },
-        arquivos
-      );
-
-      handleClose();
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleClose = () => {
-    handleClear();
-    onClose();
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setArquivos(Array.from(e.target.files));
-    }
-  };
-
-  const removerImagemExistente = (url: string) => {
-    setImagensExistentes(prev => prev.filter(img => img !== url));
-  };
+  const {
+    titulo, setTitulo,
+    descricao, setDescricao,
+    destino, setDestino,
+    preco, setPreco,
+    arquivos,
+    imagensExistentes,
+    loading,
+    periodo, setPeriodo,
+    dias,
+    handleSubmit,
+    handleClose,
+    handleFileChange,
+    removerImagemExistente
+  } = useViagemFormViewModel({ open, onClose, onSubmit, viagemEdicao });
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -241,7 +136,7 @@ export function ViagemForm({ open, onClose, onSubmit, viagemEdicao }: ViagemForm
             </div>
           )}
 
-          {/* 🔥 CALENDÁRIO RANGE */}
+          {/* CALENDÁRIO RANGE */}
           <div className="flex flex-col gap-2">
             <Label>Período da viagem</Label>
 
