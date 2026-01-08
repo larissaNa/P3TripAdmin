@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import { Viagem, ViagemInput } from '@/model/entities/Viagem';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -10,9 +9,7 @@ import { Popover, PopoverTrigger, PopoverContent } from "./ui/popover";
 import { Calendar } from "./ui/calendar";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-
-// 🔥 Import do tipo correto do calendário
-import type { DateRange } from "react-day-picker";
+import { useViagemFormViewModel } from '@/viewmodel/components/useViagemFormViewModel';
 
 interface ViagemFormProps {
   open: boolean;
@@ -147,6 +144,21 @@ export function ViagemForm({ open, onClose, onSubmit, viagemEdicao }: ViagemForm
   const removerImagemExistente = (url: string) => {
     setImagensExistentes(prev => prev.filter(img => img !== url));
   };
+  const {
+    titulo, setTitulo,
+    descricao, setDescricao,
+    destino, setDestino,
+    preco, setPreco,
+    arquivos,
+    imagensExistentes,
+    loading,
+    periodo, setPeriodo,
+    dias,
+    handleSubmit,
+    handleClose,
+    handleFileChange,
+    removerImagemExistente
+  } = useViagemFormViewModel({ open, onClose, onSubmit, viagemEdicao });
 
   const adicionarInclui = () => {
     const item = novoItemInclui.trim();
@@ -302,7 +314,7 @@ export function ViagemForm({ open, onClose, onSubmit, viagemEdicao }: ViagemForm
             </div>
           )}
 
-          {/* 🔥 CALENDÁRIO RANGE */}
+          {/* CALENDÁRIO RANGE */}
           <div className="flex flex-col gap-2">
             <Label>Período da viagem</Label>
 

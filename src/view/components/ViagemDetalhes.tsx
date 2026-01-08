@@ -3,11 +3,12 @@
  * Exibe detalhes de uma viagem com carrossel de images
  */
 
-import { useState } from 'react';
 import { Viagem } from '@/model/entities/Viagem';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Button } from './ui/button';
 import { MapPin, DollarSign, ChevronLeft, ChevronRight, Check } from 'lucide-react';
+import { MapPin, DollarSign, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useViagemDetalhesViewModel } from '@/viewmodel/components/useViagemDetalhesViewModel';
 
 interface ViagemDetalhesProps {
   viagem: Viagem | null;
@@ -15,23 +16,16 @@ interface ViagemDetalhesProps {
 }
 
 export function ViagemDetalhes({ viagem, onClose }: ViagemDetalhesProps) {
-  const [imagemAtual, setImagemAtual] = useState(0);
+  const {
+    imagemAtual,
+    setImagemAtual,
+    images,
+    proximaImagem,
+    imagemAnterior
+  } = useViagemDetalhesViewModel({ viagem });
 
   // Se ainda não existe viagem, não renderiza nada
   if (!viagem) return null;
-
-  // Garante que images sempre é um array — CORREÇÃO PRINCIPAL
-  const images = viagem.imagens ?? [];
-
-  const proximaImagem = () => {
-    if (images.length === 0) return;
-    setImagemAtual((prev) => (prev + 1) % images.length);
-  };
-
-  const imagemAnterior = () => {
-    if (images.length === 0) return;
-    setImagemAtual((prev) => (prev - 1 + images.length) % images.length);
-  };
 
   return (
     <Dialog open={!!viagem} onOpenChange={onClose}>

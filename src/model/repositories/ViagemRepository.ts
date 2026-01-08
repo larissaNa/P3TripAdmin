@@ -35,7 +35,7 @@ export const ViagemRepository = {
   // -------------------------------------------------------
   async create(viagem: ViagemInput): Promise<Viagem> {
 
-    console.log("📤 Enviando dados para INSERT:", viagem);
+    console.log(" Enviando dados para INSERT:", viagem);
 
     const { data, error } = await supabase
       .from("viagem")
@@ -43,8 +43,8 @@ export const ViagemRepository = {
       .select("*")
       .single();
 
-    console.log("❗ ERRO SUPABASE:", error);
-    console.log("📥 RESPOSTA SUPABASE:", data);
+    console.log(" ERRO SUPABASE:", error);
+    console.log(" RESPOSTA SUPABASE:", data);
 
     if (error) throw error;
     return data;

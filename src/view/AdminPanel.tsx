@@ -6,6 +6,7 @@
 import { useState } from 'react';
 import { useViagens } from '@/viewmodel/useViagens';
 import { useAuth } from '@/hooks/useAuth';
+import { useAdminPanelViewModel } from '@/viewmodel/components/useAdminPanelViewModel';
 import { ViagemCard } from '@/view/components/ViagemCard';
 import { ViagemForm } from '@/view/components/ViagemForm';
 import { ViagemDetalhes } from '@/view/components/ViagemDetalhes';
@@ -14,6 +15,8 @@ import { Button } from './components/ui/button';
 import { Viagem, ViagemInput } from '@/model/entities/Viagem';
 import { Plus, Plane, RefreshCw, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { Button } from '../view/components/ui/button';
+import { Plus, Plane, RefreshCw } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,6 +27,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from './components/ui/alert-dialog';
+} from '../view/components/ui/alert-dialog';
 
 export function AdminPanel() {
   const {
@@ -31,9 +35,14 @@ export function AdminPanel() {
     loading,
     viagemSelecionada,
     filtros,
-    criarViagem,
-    atualizarViagem,
-    excluirViagem,
+    formAberto,
+    viagemEdicao,
+    viagemExcluir,
+    handleNovaViagem,
+    handleEditarViagem,
+    handleSubmitForm,
+    handleConfirmarExclusao,
+    handleSolicitarExclusao,
     selecionarViagem,
     atualizarFiltros,
     limparFiltros,
@@ -78,6 +87,11 @@ export function AdminPanel() {
       setViagemExcluir(null);
     }
   };
+    recarregar,
+    handleCloseForm,
+    handleCloseDetalhes,
+    handleCancelExclusao
+  } = useAdminPanelViewModel();
 
   return (
     <div className="min-h-screen bg-background">
@@ -135,7 +149,7 @@ export function AdminPanel() {
                 viagem={viagem}
                 onView={selecionarViagem}
                 onEdit={handleEditarViagem}
-                onDelete={id => setViagemExcluir(id)}
+                onDelete={handleSolicitarExclusao}
               />
             ))}
           </div>
@@ -145,10 +159,7 @@ export function AdminPanel() {
       {/* Modal de formulário */}
       <ViagemForm
         open={formAberto}
-        onClose={() => {
-          setFormAberto(false);
-          setViagemEdicao(null);
-        }}
+        onClose={handleCloseForm}
         onSubmit={handleSubmitForm}
         viagemEdicao={viagemEdicao}
       />
@@ -156,11 +167,11 @@ export function AdminPanel() {
       {/* Modal de detalhes */}
       <ViagemDetalhes
         viagem={viagemSelecionada}
-        onClose={() => selecionarViagem(null)}
+        onClose={handleCloseDetalhes}
       />
 
       {/* Dialog de confirmação de exclusão */}
-      <AlertDialog open={!!viagemExcluir} onOpenChange={() => setViagemExcluir(null)}>
+      <AlertDialog open={!!viagemExcluir} onOpenChange={handleCancelExclusao}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>

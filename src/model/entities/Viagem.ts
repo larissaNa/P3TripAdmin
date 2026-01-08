@@ -7,8 +7,8 @@ export interface Viagem {
   salvo: boolean;
   data_range: string;
   dias: number;
-  imagens: string[];   // igual ao banco
   inclui?: string[];   // Lista de itens inclusos
+  imagens: string[];  
   created_at: string;
 }
 
