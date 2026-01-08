@@ -24,6 +24,8 @@ export function useViagemFormViewModel({
   const [arquivos, setArquivos] = useState<File[]>([]);
   const [imagensExistentes, setImagensExistentes] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  const [inclui, setInclui] = useState<string[]>([]);
+  const [novoItemInclui, setNovoItemInclui] = useState('');
 
   // Estado corrigido: nunca undefined, sempre um DateRange válido
   const [periodo, setPeriodo] = useState<DateRange>({
@@ -46,6 +48,8 @@ export function useViagemFormViewModel({
     setPreco('');
     setArquivos([]);
     setImagensExistentes([]);
+    setInclui([]);
+    setNovoItemInclui('');
 
     // reset correto
     setPeriodo({
@@ -69,6 +73,7 @@ export function useViagemFormViewModel({
       setDestino(viagemEdicao.destino || '');
       setPreco(viagemEdicao.preco?.toString() || '');
       setImagensExistentes(viagemEdicao.imagens || []);
+      setInclui(viagemEdicao.inclui || []);
 
       // Converte string para período
       if (viagemEdicao.data_range) {
@@ -112,6 +117,7 @@ export function useViagemFormViewModel({
           destino,
           preco: preco ? parseFloat(preco) : undefined,
           imagens: imagensExistentes,
+          inclui,
           data_range: dataRangeFormatado,
           dias: dias ? Number(dias) : undefined
         },
@@ -134,6 +140,18 @@ export function useViagemFormViewModel({
     setImagensExistentes(prev => prev.filter(img => img !== url));
   };
 
+  const adicionarInclui = () => {
+    const item = novoItemInclui.trim();
+    if (!item) return;
+
+    setInclui(prev => (prev.includes(item) ? prev : [...prev, item]));
+    setNovoItemInclui('');
+  };
+
+  const removerInclui = (index: number) => {
+    setInclui(prev => prev.filter((_, i) => i !== index));
+  };
+
   return {
     titulo, setTitulo,
     descricao, setDescricao,
@@ -144,9 +162,13 @@ export function useViagemFormViewModel({
     loading,
     periodo, setPeriodo,
     dias,
+    inclui,
+    novoItemInclui, setNovoItemInclui,
     handleSubmit,
     handleClose,
     handleFileChange,
-    removerImagemExistente
+    removerImagemExistente,
+    adicionarInclui,
+    removerInclui
   };
 }
