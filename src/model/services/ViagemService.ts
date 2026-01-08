@@ -41,25 +41,25 @@ export const ViagemService = {
    */
   async atualizar(id: string, viagem: Partial<ViagemInput>, novosArquivos: File[]): Promise<Viagem> {
 
-  // 1️⃣ Buscar a viagem atual (para recuperar as imagens já existentes)
+  //  Buscar a viagem atual (para recuperar as imagens já existentes)
   const viagemAtual = await ViagemRepository.getById(id);
 
   const imagensExistentes = viagemAtual?.imagens ?? [];
 
-  // 2️⃣ Upload das novas imagens
+  //  Upload das novas imagens
   let novasImagens: string[] = [];
 
   if (novosArquivos.length > 0) {
     novasImagens = await ViagemRepository.uploadImages(novosArquivos, id);
   }
 
-  // 3️⃣ Junta imagens existentes + novas
+  //  Junta imagens existentes + novas
   const imagensFinais = [
     ...imagensExistentes,
     ...novasImagens
   ];
 
-  // 4️⃣ Atualiza viagem
+  //  Atualiza viagem
   const dadosAtualizados = {
     ...viagem,
     imagens: imagensFinais
