@@ -1,5 +1,6 @@
 import { ViagemRepository } from '@/model/repositories/ViagemRepository';
 import { Viagem, ViagemInput } from '@/model/entities/Viagem';
+import { NotificationService } from '@/model/services/NotificationService';
 
 export const ViagemService = {
 
@@ -32,6 +33,9 @@ export const ViagemService = {
     const viagemFinal = await ViagemRepository.update(novaViagem.id, {
       imagens: imagens,
     });
+
+    // 🔔 Disparar notificação para todos os usuários
+    await NotificationService.notificarNovaViagem(viagemFinal.titulo, viagemFinal.destino);
 
     return viagemFinal;
   },
