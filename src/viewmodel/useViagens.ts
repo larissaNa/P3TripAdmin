@@ -7,6 +7,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Viagem, ViagemInput } from '@/model/entities/Viagem';
 import { ViagemService } from '@/model/services/ViagemService';
 import { useToast } from '@/hooks/use-toast';
+import { NotificationService } from '@/model/services/NotificationService';
 
 interface Filtros {
   destino: string;
@@ -67,6 +68,10 @@ export function useViagens() {
   const criarViagem = async (dados: ViagemInput, arquivos: File[]) => {
     try {
       await ViagemService.criar(dados, arquivos);
+      
+      // Enviar notificação push
+      NotificationService.notificarNovaViagem(dados.titulo, dados.destino);
+
       toast({
         title: 'Sucesso',
         description: 'Viagem cadastrada com sucesso!'
