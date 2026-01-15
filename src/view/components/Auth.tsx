@@ -63,8 +63,8 @@ export default function Auth() {
       } else {
         if (mode === 'signup') {
           toast({
-            title: 'Conta criada',
-            description: 'Sua conta foi criada. Faça login para continuar.'
+            title: 'Conta criada - Verifique seu e-mail',
+            description: 'Verifique seu e-mail para ativar sua conta e faça login para continuar.'
           });
         } else {
           navigate('/');
