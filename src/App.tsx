@@ -17,14 +17,11 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute>
-                <Index />
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/" element={
+            <ProtectedRoute requireAdmin={false}>
+              <Index />
+            </ProtectedRoute>
+          } />
           <Route path="/auth" element={<Auth />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
